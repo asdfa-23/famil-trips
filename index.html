@@ -1,0 +1,1288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Hong Kong Countdown</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@700&display=swap&text=維多利亞港旺角太平山天壇大佛點心燒鵝叉燒式奶茶菠蘿油餐廳酒樓飯店麵粥小廚香今日出發味">
+<style>
+/* Layout: full-bleed illustrated slideshow behind a left-weighted countdown; caption bottom-left, slide dots bottom-right. */
+:root {
+  --ink: #0a0912;
+  --paper: #f7f0e4;
+  --mute: #cfc5dc;
+  --neon: #ff4f7b;
+  --glow: #ffd166;
+  --scrim: 10, 9, 18;
+  --display: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --cjk: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  overflow-x: hidden;
+}
+
+/* slideshow */
+.stage { position: fixed; inset: 0; z-index: 0; background: var(--ink); overflow: hidden; }
+.slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.8s ease; }
+.slide.on { opacity: 1; }
+.slide svg { width: 100%; height: 100%; display: block; transform-origin: 62% 55%; }
+.slide.on svg { animation: drift 10s ease-out forwards; }
+@keyframes drift { from { transform: scale(1); } to { transform: scale(1.08); } }
+.scrim {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(var(--scrim), .84) 0%, rgba(var(--scrim), .5) 52%, rgba(var(--scrim), .12) 100%),
+    linear-gradient(0deg, rgba(var(--scrim), .88) 0%, rgba(var(--scrim), 0) 42%),
+    linear-gradient(180deg, rgba(var(--scrim), .55) 0%, rgba(var(--scrim), 0) 22%);
+}
+
+/* content */
+main {
+  position: relative; z-index: 2; height: 100%;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  padding-block: 24px; overflow-y: auto; overflow-x: hidden;
+  max-width: 1180px; margin-inline: auto;
+}
+.top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.mark { font-family: var(--cjk); font-weight: 700; font-size: 20px; letter-spacing: .08em; }
+.mark span { font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin-left: 12px; }
+.tl { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.today { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--glow); }
+.when { align-self: flex-start; max-width: 100%; font-family: var(--mono); font-size: clamp(14px, 2.4vw, 20px); font-weight: 500; line-height: 1.35; letter-spacing: .14em; text-transform: uppercase; color: #8cf5e0; padding: 10px 18px; border: 2px solid #6ee7d0; border-radius: 99px; background: rgba(110, 231, 208, .14); box-shadow: 0 0 26px rgba(110, 231, 208, .45), inset 0 0 14px rgba(110, 231, 208, .15); text-shadow: 0 0 14px rgba(110, 231, 208, .6); }
+@media (max-width: 640px) { .when { border-radius: 18px; letter-spacing: .1em; } }
+
+.count { display: flex; flex-direction: column; gap: 14px; }
+.count h1 {
+  margin: 0; font-family: var(--body); font-weight: 500; font-size: clamp(16px, 2.2vw, 22px);
+  color: var(--paper); max-width: 30ch; text-wrap: balance; line-height: 1.35;
+}
+.timer { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; max-width: 980px; }
+.cell { border-top: 1px solid rgba(247, 240, 228, .3); padding-top: 12px; min-width: 0; }
+.num {
+  display: block; font-family: var(--display); font-weight: 800; line-height: .88;
+  font-size: clamp(64px, 13.5vw, 176px); letter-spacing: .01em;
+  font-variant-numeric: tabular-nums; color: var(--paper);
+}
+.cell.days .num { color: var(--neon); text-shadow: 0 0 28px rgba(255, 79, 123, .45); }
+.cell.days { border-top-color: var(--neon); }
+.lbl { display: block; margin-top: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--glow); }
+.sub { margin: 0; font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: var(--mute); }
+
+.wx { max-width: 640px; padding: 16px 18px; background: rgba(var(--scrim), .62); border: 1px solid rgba(247, 240, 228, .18); border-radius: 12px; backdrop-filter: blur(6px); }
+.wxhead { font-family: var(--mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--glow); }
+.wxrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+.wxitem { min-width: 0; }
+.wxv { display: block; font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1; letter-spacing: .02em; }
+.wxl { display: block; margin-top: 4px; font-size: 13px; line-height: 1.35; color: var(--mute); }
+.wxnote { margin: 12px 0 0; font-size: 13px; line-height: 1.5; color: var(--mute); }
+.wxlinks { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.wxlinks a { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--paper); text-decoration: none; padding: 8px 12px; border: 1px solid var(--neon); border-radius: 8px; }
+.wxlinks a:hover { background: var(--neon); color: var(--ink); }
+.wxlinks a:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.navrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 760px; }
+.navbtn { --acg: 255, 79, 123; display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: var(--paper); cursor: pointer; min-height: 78px; padding: 14px 14px; border-radius: 14px; border: 1.5px solid rgb(var(--acg)); background: linear-gradient(135deg, rgba(var(--acg), .32), rgba(var(--scrim), .86) 70%); box-shadow: 0 0 22px rgba(var(--acg), .28); min-width: 0; transition: transform .15s, box-shadow .2s; }
+.navbtn[data-sheet="acc"] { --acg: 255, 209, 102; }
+.navbtn[data-sheet="itn"] { --acg: 110, 231, 208; }
+.navbtn:hover { transform: translateY(-2px); box-shadow: 0 0 32px rgba(var(--acg), .5); }
+.navi { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; color: rgb(var(--acg)); background: rgba(var(--acg), .16); border: 1px solid rgba(var(--acg), .5); }
+.navx { flex: 1; min-width: 0; }
+.navgo { flex: none; font-size: 28px; line-height: 1; color: rgb(var(--acg)); }
+.navbtn:focus-visible, .close:focus-visible, .btn:focus-visible, .x:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.navt { display: block; font-weight: 700; font-size: 16px; line-height: 1.2; text-transform: uppercase; letter-spacing: .06em; }
+.navm { display: block; margin-top: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: #e2daec; overflow-wrap: anywhere; }
+.sheet[data-k="rem"] .panel { --acg: 255, 79, 123; }
+.sheet[data-k="acc"] .panel { --acg: 255, 209, 102; }
+.sheet[data-k="itn"] .panel { --acg: 110, 231, 208; }
+.panel { background: #1c1838; border-top: 4px solid rgb(var(--acg, 255, 79, 123)); box-shadow: 0 -10px 40px rgba(var(--acg, 255, 79, 123), .22); }
+.phead h2 { color: rgb(var(--acg, 255, 79, 123)); font-size: 42px; text-transform: uppercase; letter-spacing: .04em; }
+.hint { color: #e2daec; font-size: 14px; }
+.rsec { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 22px 0 6px; flex-wrap: wrap; }
+.rsec:first-of-type { margin-top: 8px; }
+.rh { margin: 0; font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: .05em; text-transform: uppercase; color: var(--paper); }
+.rc { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--glow); }
+.row label { font-size: 16px; }
+.btn.go { border-color: rgb(var(--acg, 255, 79, 123)); }
+.btn.go:hover, .close:hover { background: rgb(var(--acg, 255, 79, 123)); border-color: rgb(var(--acg, 255, 79, 123)); }
+
+.sheet { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet .bd { position: absolute; inset: 0; background: rgba(0, 0, 0, .66); }
+.panel { position: relative; width: min(720px, 100%); max-height: 88%; overflow-y: auto; background: #17142b; border: 1px solid rgba(247, 240, 228, .2); border-bottom: 0; border-radius: 16px 16px 0 0; padding: 20px max(18px, env(safe-area-inset-left, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)); }
+.phead { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.phead h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 36px; letter-spacing: .02em; }
+.close, .btn { font: inherit; font-size: 13px; color: var(--paper); background: transparent; border: 1px solid rgba(247, 240, 228, .35); border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+.btn.go { border-color: var(--neon); }
+.close:hover, .btn:hover { background: var(--neon); border-color: var(--neon); color: var(--ink); }
+.hint { margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: var(--mute); max-width: 60ch; }
+.prog { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--glow); margin: 0 0 10px; }
+.list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(247, 240, 228, .12); min-width: 0; }
+.row label { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 12px; font-size: 15px; line-height: 1.4; cursor: pointer; }
+.row input[type=checkbox] { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--neon); flex: none; }
+.row.done label span { text-decoration: line-through; color: var(--mute); }
+.x { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; color: var(--mute); background: none; border: 1px solid transparent; border-radius: 8px; padding: 0; cursor: pointer; flex: none; transition: color .15s, border-color .15s, background .15s; }
+.x:hover { color: var(--paper); border-color: rgba(247, 240, 228, .3); background: rgba(247, 240, 228, .07); }
+.x[title="Remove"]:hover { color: var(--neon); border-color: var(--neon); }
+.add { display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch; }
+.add input { flex: 1 1 160px; min-width: 0; }
+input[type=text], input[type=date], input[type=time], textarea { font: inherit; font-size: 15px; color: var(--paper); background: rgba(247, 240, 228, .07); border: 1px solid rgba(247, 240, 228, .25); border-radius: 8px; padding: 10px 12px; width: 100%; color-scheme: dark; }
+input::placeholder, textarea::placeholder { color: rgba(207, 197, 220, .6); }
+input:focus-visible, textarea:focus-visible { outline: 2px solid var(--glow); outline-offset: 1px; }
+.facts { margin: 0 0 22px; display: flex; flex-direction: column; }
+.fact { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 4px 20px; align-items: baseline; padding: 16px 0; border-top: 1px solid rgba(247, 240, 228, .14); }
+.fact:last-child { border-bottom: 1px solid rgba(247, 240, 228, .14); }
+.fact dt { font-family: var(--mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--mute); }
+.fact dd { margin: 0; font-size: 17px; line-height: 1.45; overflow-wrap: anywhere; }
+.fact:first-child dd { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1.05; letter-spacing: .02em; }
+.fact:nth-child(5) dd { font-family: var(--mono); font-size: 18px; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .fact { grid-template-columns: minmax(0, 1fr); } }
+.panel.dis {
+  background:
+    radial-gradient(circle at 10% 6%, rgba(255, 255, 255, .9) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 34% 14%, rgba(255, 255, 255, .7) 0 1.3px, transparent 2.3px),
+    radial-gradient(circle at 62% 5%, rgba(255, 255, 255, .85) 0 1.6px, transparent 2.6px),
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, .7) 0 1.3px, transparent 2.3px),
+    radial-gradient(circle at 78% 30%, rgba(255, 255, 255, .6) 0 1.2px, transparent 2.2px),
+    radial-gradient(circle at 20% 38%, rgba(255, 255, 255, .6) 0 1.2px, transparent 2.2px),
+    linear-gradient(180deg, #231858 0%, #3d2377 38%, #6a2f85 72%, #8b3f7f 100%);
+  border-top-color: #ffd166;
+  box-shadow: 0 -10px 44px rgba(255, 209, 102, .3);
+}
+.panel.dis .phead h2, .panel.dis .pw, .panel.dis .tlt { color: #ffd166; }
+.panel.dis .dtab.on { border-color: #ffd166; background: rgba(255, 209, 102, .2); }
+.panel.dis .segb.on { background: #ffd166; }
+.tipsbox { margin-top: 12px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(255, 209, 102, .5); background: rgba(26, 20, 80, .55); }
+.tipsbox .fh { margin-top: 0; color: #ffd166; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; margin-bottom: 16px; border: 1px solid rgba(247, 240, 228, .3); border-radius: 99px; }
+.segb { font: inherit; font-size: 14px; color: var(--paper); background: none; border: 0; border-radius: 99px; padding: 8px 16px; cursor: pointer; }
+.segb.on { background: rgb(var(--acg, 110, 231, 208)); color: var(--ink); font-weight: 700; }
+.segb:focus-visible, .dtab:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.dtabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
+.dtab { flex: none; min-width: 96px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font: inherit; text-align: left; color: var(--paper); background: rgba(247, 240, 228, .06); border: 1px solid rgba(247, 240, 228, .22); border-radius: 12px; padding: 8px 12px; cursor: pointer; }
+.dtab.on { border-color: rgb(var(--acg, 110, 231, 208)); background: rgba(var(--acg, 110, 231, 208), .2); }
+.dtn { font-weight: 700; font-size: 14px; }
+.dtd { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: #e2daec; }
+.dtg { margin-top: 2px; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--glow); }
+.ptag { display: inline-block; margin-bottom: 8px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); background: var(--glow); border-radius: 99px; padding: 4px 12px; }
+.pt2 { margin: 0; font-size: 21px; line-height: 1.25; text-wrap: balance; }
+.pw { margin: 6px 0 4px; font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--acg, 110, 231, 208)); }
+.tl { list-style: none; margin: 14px 0 0; padding: 0; }
+.tlr { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 6px 16px; padding: 16px 0; border-top: 1px solid rgba(247, 240, 228, .14); }
+.tlt { font-family: var(--mono); font-size: 13px; letter-spacing: .04em; color: rgb(var(--acg, 110, 231, 208)); padding-top: 2px; }
+.tlc { min-width: 0; }
+.tls { font-weight: 700; font-size: 17px; line-height: 1.3; }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.pick { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; padding: 3px 9px; border-radius: 99px; color: var(--glow); background: rgba(255, 209, 102, .14); border: 1px solid rgba(255, 209, 102, .45); }
+.tld { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: #e2daec; }
+.tli { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.tli .addr { color: #cfc5dc; }
+@media (max-width: 640px) { .tlr { grid-template-columns: minmax(0, 1fr); gap: 4px; } .tlt { padding-top: 0; } }
+.fh { margin: 18px 0 4px; font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--glow); }
+.kind { flex: none; min-width: 54px; text-align: center; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 3px 9px; border-radius: 99px; border: 1px solid; }
+.kind.food { color: var(--glow); border-color: rgba(255, 209, 102, .5); background: rgba(255, 209, 102, .12); }
+.kind.shop { color: #8cf5e0; border-color: rgba(110, 231, 208, .5); background: rgba(110, 231, 208, .12); }
+select { font: inherit; font-size: 15px; color: var(--paper); background: #17142b; border: 1px solid rgba(247, 240, 228, .25); border-radius: 8px; padding: 10px 12px; color-scheme: dark; }
+select:focus-visible { outline: 2px solid var(--glow); outline-offset: 1px; }
+.add select { flex: 0 0 auto; }
+.row .editf { flex: 1; min-width: 0; }
+.add input[type=time] { flex: 0 0 120px; }
+.form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.form .full { grid-column: 1 / -1; }
+.fld { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fld > span { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--glow); }
+textarea { min-height: 84px; resize: vertical; }
+.acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+.saved { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+.day { margin-bottom: 22px; }
+.day.park { padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 209, 102, .4); background: linear-gradient(180deg, rgba(122, 63, 174, .3), rgba(255, 79, 123, .1)); }
+.day.today { padding: 12px; border: 1px solid #6ee7d0; border-radius: 14px; background: rgba(110, 231, 208, .09); box-shadow: 0 0 26px rgba(110, 231, 208, .28); }
+.todaytag { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); background: #6ee7d0; border-radius: 99px; padding: 3px 10px; }
+.parkbn { position: relative; height: 132px; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+.parkbn svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.parkbn .pt { position: absolute; left: 16px; bottom: 12px; max-width: 60%; font-family: var(--display); font-weight: 800; font-size: clamp(28px, 6vw, 38px); line-height: 1; letter-spacing: .03em; color: #fff3c4; text-shadow: 0 2px 16px rgba(26, 20, 80, .9), 0 0 22px rgba(255, 209, 102, .5); }
+.tw { animation: twinkle 2.8s ease-in-out infinite; }
+.tw.d2 { animation-delay: 1.3s; }
+@keyframes twinkle { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tw { animation: none; } }
+.day h3 { margin: 0 0 6px; font-weight: 700; font-size: 17px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.day h3 small { font-family: var(--mono); font-weight: 400; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--glow); }
+.tm { font-family: var(--mono); font-size: 13px; color: var(--glow); flex: none; min-width: 52px; }
+.tag { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); border: 1px solid rgba(247, 240, 228, .25); border-radius: 99px; padding: 2px 8px; margin-left: 8px; white-space: nowrap; }
+.itxt { flex: 1; min-width: 0; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+.dayctl { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+@media (max-width: 640px) {
+  .navrow { grid-template-columns: minmax(0, 1fr); }
+  .navbtn { min-height: 68px; }
+  .form { grid-template-columns: minmax(0, 1fr); }
+  .phead h2 { font-size: 30px; }
+}
+.bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+.cap { min-width: 0; max-width: 460px; }
+.cap .kind { font-family: var(--mono); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--glow); }
+.cap .name { margin: 6px 0 0; font-weight: 700; font-size: clamp(20px, 3vw, 28px); line-height: 1.15; text-wrap: balance; }
+.cap .zh { font-family: var(--cjk); font-weight: 700; font-size: 18px; color: var(--paper); margin-top: 4px; letter-spacing: .1em; }
+.cap .note { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: var(--mute); }
+.cap.swap > * { animation: rise .7s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.dots { display: flex; align-items: center; }
+.dotbtn { background: none; border: 0; padding: 12px 3px; cursor: pointer; }
+.dot { display: block; width: 10px; height: 10px; border-radius: 99px; background: rgba(247, 240, 228, .38); position: relative; overflow: hidden; transition: width .35s ease; }
+.dotbtn:hover .dot { background: rgba(247, 240, 228, .7); }
+.dotbtn.on .dot { width: 38px; }
+.dotbtn.on .dot::after { content: ""; position: absolute; inset: 0; background: var(--neon); transform-origin: left; animation: fill 6.5s linear forwards; }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.dotbtn:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; border-radius: 6px; }
+
+.arrived { display: none; font-family: var(--cjk); font-weight: 700; font-size: clamp(22px, 4vw, 36px); color: var(--glow); letter-spacing: .1em; margin: 0; }
+.is-done .arrived { display: block; }
+
+@media (max-width: 640px) {
+  .timer { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; }
+  .num { font-size: clamp(76px, 25vw, 120px); }
+  .scrim {
+    background:
+      linear-gradient(0deg, rgba(var(--scrim), .9) 0%, rgba(var(--scrim), .3) 45%),
+      linear-gradient(180deg, rgba(var(--scrim), .7) 0%, rgba(var(--scrim), .45) 100%);
+  }
+  .mark span { display: block; margin: 4px 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide { transition-duration: .01s; }
+  .slide.on svg, .dotbtn.on .dot::after, .cap.swap > * { animation: none; }
+  .dotbtn.on .dot::after { transform: none; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="stage" aria-hidden="true">
+
+<!-- 1. Victoria Harbour -->
+<div class="slide on" data-i="0">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g1sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#150f3a"/><stop offset=".55" stop-color="#b33a7b"/><stop offset="1" stop-color="#ffa45c"/></linearGradient>
+<linearGradient id="g1sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0825f"/><stop offset=".22" stop-color="#4a2a63"/><stop offset="1" stop-color="#120d2b"/></linearGradient>
+<pattern id="g1win" width="14" height="18" patternUnits="userSpaceOnUse"><rect width="14" height="18" fill="#1c1538"/><rect x="3" y="4" width="6" height="8" fill="#ffd27a" opacity=".85"/></pattern>
+</defs>
+<rect width="1600" height="640" fill="url(#g1sky)"/>
+<circle cx="1180" cy="500" r="96" fill="#ffd9a0" opacity=".92"/>
+<g fill="url(#g1win)">
+<rect x="60" y="440" width="90" height="200"/><rect x="160" y="380" width="70" height="260"/><rect x="240" y="470" width="110" height="170"/>
+<rect x="360" y="320" width="80" height="320"/><rect x="450" y="420" width="100" height="220"/><rect x="560" y="350" width="60" height="290"/>
+<rect x="630" y="490" width="120" height="150"/><rect x="760" y="270" width="70" height="370"/><rect x="840" y="410" width="100" height="230"/>
+<rect x="950" y="360" width="80" height="280"/><rect x="1040" y="460" width="120" height="180"/><rect x="1170" y="400" width="90" height="240"/>
+<rect x="1270" y="330" width="70" height="310"/><rect x="1350" y="450" width="110" height="190"/><rect x="1470" y="390" width="100" height="250"/>
+</g>
+<g fill="#24195a"><polygon points="360,320 440,320 400,268"/><polygon points="760,270 830,270 795,180"/><rect x="792" y="140" width="6" height="44"/><polygon points="1270,330 1340,330 1305,285"/></g>
+<rect y="640" width="1600" height="260" fill="url(#g1sea)"/>
+<g fill="#ffd27a" opacity=".38">
+<rect x="150" y="662" width="140" height="3"/><rect x="390" y="672" width="90" height="3"/><rect x="560" y="684" width="170" height="3"/><rect x="790" y="700" width="120" height="3"/>
+<rect x="960" y="668" width="150" height="3"/><rect x="1130" y="650" width="260" height="4"/><rect x="1170" y="670" width="180" height="4"/><rect x="1210" y="692" width="100" height="4"/>
+<rect x="1240" y="716" width="60" height="4"/><rect x="300" y="720" width="110" height="3"/><rect x="620" y="750" width="80" height="3"/>
+</g>
+<g transform="translate(560 650)">
+<path d="M-10 50 L330 50 Q310 96 250 102 L40 102 Q0 92 -10 50 Z" fill="#2a0f1f"/>
+<rect x="116" y="-175" width="6" height="226" fill="#1a0a14"/><rect x="56" y="-125" width="5" height="176" fill="#1a0a14"/>
+<polygon points="125,-168 125,40 255,30 238,-122" fill="#c4263f"/>
+<g stroke="#7b1328" stroke-width="3"><line x1="125" y1="-110" x2="246" y2="-100"/><line x1="125" y1="-50" x2="250" y2="-44"/><line x1="125" y1="6" x2="253" y2="2"/></g>
+<polygon points="53,-120 53,40 -18,34 -8,-92" fill="#a81d36"/>
+<g stroke="#6a0f22" stroke-width="3"><line x1="53" y1="-70" x2="-12" y2="-62"/><line x1="53" y1="-20" x2="-14" y2="-16"/></g>
+</g>
+</svg>
+</div>
+
+<!-- 2. Mong Kok neon -->
+<div class="slide" data-i="1">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" style="font-family:var(--cjk);font-weight:700">
+<defs>
+<filter id="g2glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<linearGradient id="g2road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1741"/><stop offset="1" stop-color="#0d0a1c"/></linearGradient>
+</defs>
+<rect width="1600" height="900" fill="#0d0a1c"/>
+<rect x="0" y="0" width="470" height="740" fill="#181233"/><rect x="1130" y="0" width="470" height="740" fill="#181233"/>
+<rect x="470" y="200" width="150" height="540" fill="#120d28"/><rect x="980" y="150" width="150" height="590" fill="#120d28"/>
+<rect x="620" y="440" width="360" height="300" fill="#0f0b22"/>
+<rect y="720" width="1600" height="180" fill="url(#g2road)"/>
+<g opacity=".28" filter="url(#g2glow)"><rect x="140" y="740" width="22" height="150" fill="#ff3d6e"/><rect x="295" y="740" width="22" height="150" fill="#3fe0c0"/><rect x="1280" y="740" width="22" height="150" fill="#ffd166"/><rect x="1435" y="740" width="22" height="150" fill="#7aa2ff"/><rect x="780" y="740" width="40" height="150" fill="#ff3d6e"/></g>
+<g filter="url(#g2glow)" fill="none" stroke-width="6">
+<rect x="90" y="110" width="130" height="326" rx="10" stroke="#ff3d6e" fill="#2a0a1e"/>
+<rect x="250" y="200" width="130" height="418" rx="10" stroke="#3fe0c0" fill="#08231f"/>
+<rect x="1230" y="90" width="130" height="418" rx="10" stroke="#ffd166" fill="#2a2008"/>
+<rect x="1390" y="230" width="130" height="418" rx="10" stroke="#7aa2ff" fill="#0c1430"/>
+<rect x="560" y="110" width="480" height="130" rx="14" stroke="#ff3d6e" fill="#2a0a1e"/>
+<rect x="640" y="300" width="320" height="90" rx="14" stroke="#3fe0c0" fill="#08231f"/>
+</g>
+<g font-size="76" text-anchor="middle">
+<text x="155" y="192" fill="#ff7a9c"><tspan x="155">茶</tspan><tspan x="155" dy="92">餐</tspan><tspan x="155" dy="92">廳</tspan></text>
+<text x="315" y="282" fill="#7ff2d8"><tspan x="315">點</tspan><tspan x="315" dy="92">心</tspan><tspan x="315" dy="92">酒</tspan><tspan x="315" dy="92">樓</tspan></text>
+<text x="1295" y="172" fill="#ffe08a"><tspan x="1295">燒</tspan><tspan x="1295" dy="92">鵝</tspan><tspan x="1295" dy="92">飯</tspan><tspan x="1295" dy="92">店</tspan></text>
+<text x="1455" y="312" fill="#a9c1ff"><tspan x="1455">麵</tspan><tspan x="1455" dy="92">粥</tspan><tspan x="1455" dy="92">小</tspan><tspan x="1455" dy="92">廚</tspan></text>
+</g>
+<text x="800" y="208" font-size="100" text-anchor="middle" fill="#ff7a9c" letter-spacing="30">旺角</text>
+<text x="800" y="366" font-size="58" text-anchor="middle" fill="#7ff2d8" letter-spacing="24">香港</text>
+<g transform="translate(560 690)">
+<path d="M0 70 L0 42 Q0 22 40 18 L112 0 L250 0 L322 18 Q360 22 360 42 L360 70 Z" fill="#d6283b"/>
+<path d="M122 10 L246 10 L292 30 L102 30 Z" fill="#1a1830"/>
+<rect x="150" y="-14" width="60" height="14" rx="3" fill="#ffd166"/>
+<rect x="340" y="38" width="22" height="10" rx="4" fill="#fff3c4"/>
+<circle cx="84" cy="72" r="24" fill="#111" stroke="#444" stroke-width="6"/><circle cx="282" cy="72" r="24" fill="#111" stroke="#444" stroke-width="6"/>
+</g>
+</svg>
+</div>
+
+<!-- 3. Victoria Peak -->
+<div class="slide" data-i="2">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g3sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070720"/><stop offset="1" stop-color="#3a3a86"/></linearGradient>
+<pattern id="g3win" width="12" height="16" patternUnits="userSpaceOnUse"><rect width="12" height="16" fill="#0f0e2a"/><rect x="3" y="3" width="4" height="6" fill="#ffe29a" opacity=".8"/></pattern>
+<pattern id="g3win2" width="9" height="12" patternUnits="userSpaceOnUse"><rect width="9" height="12" fill="#1a1950"/><rect x="2" y="3" width="3" height="4" fill="#9fd8ff" opacity=".75"/></pattern>
+</defs>
+<rect width="1600" height="520" fill="url(#g3sky)"/>
+<g fill="#fff" opacity=".7"><circle cx="120" cy="80" r="2"/><circle cx="330" cy="150" r="1.6"/><circle cx="520" cy="60" r="2"/><circle cx="760" cy="130" r="1.6"/><circle cx="980" cy="70" r="2"/><circle cx="1210" cy="160" r="1.6"/><circle cx="1420" cy="90" r="2"/><circle cx="1540" cy="200" r="1.6"/><circle cx="640" cy="230" r="1.4"/><circle cx="1090" cy="250" r="1.4"/></g>
+<g fill="url(#g3win2)">
+<rect x="0" y="430" width="60" height="70"/><rect x="70" y="400" width="40" height="100"/><rect x="120" y="440" width="80" height="60"/><rect x="210" y="380" width="50" height="120"/><rect x="270" y="420" width="70" height="80"/>
+<rect x="350" y="450" width="90" height="50"/><rect x="450" y="410" width="50" height="90"/><rect x="510" y="370" width="40" height="130"/><rect x="560" y="430" width="100" height="70"/><rect x="670" y="395" width="60" height="105"/>
+<rect x="740" y="445" width="90" height="55"/><rect x="840" y="415" width="50" height="85"/><rect x="900" y="360" width="45" height="140"/><rect x="955" y="430" width="110" height="70"/><rect x="1075" y="405" width="60" height="95"/>
+<rect x="1145" y="440" width="90" height="60"/><rect x="1245" y="385" width="50" height="115"/><rect x="1305" y="425" width="80" height="75"/><rect x="1395" y="400" width="60" height="100"/><rect x="1465" y="440" width="135" height="60"/>
+</g>
+<rect y="500" width="1600" height="90" fill="#0f0f3e"/>
+<g fill="#ffd27a" opacity=".5"><rect x="80" y="520" width="90" height="3"/><rect x="330" y="540" width="140" height="3"/><rect x="620" y="526" width="110" height="3"/><rect x="900" y="548" width="160" height="3"/><rect x="1180" y="530" width="120" height="3"/><rect x="1420" y="556" width="90" height="3"/></g>
+<g fill="url(#g3win)">
+<rect x="0" y="620" width="150" height="280"/><rect x="160" y="560" width="110" height="340"/><rect x="280" y="660" width="160" height="240"/><rect x="450" y="520" width="120" height="380"/>
+<rect x="580" y="610" width="140" height="290"/><rect x="730" y="680" width="170" height="220"/><rect x="910" y="580" width="130" height="320"/><rect x="1050" y="640" width="150" height="260"/>
+</g>
+<polygon points="450,520 570,520 510,462" fill="#1d1c4d"/>
+<polygon points="880,900 1600,470 1600,900" fill="#05060f"/>
+<line x1="880" y1="890" x2="1600" y2="460" stroke="#d9cfb8" stroke-width="5"/>
+<g stroke="#d9cfb8" stroke-width="3" opacity=".6"><line x1="1000" y1="890" x2="1000" y2="860"/><line x1="1120" y1="818" x2="1120" y2="786"/><line x1="1240" y1="746" x2="1240" y2="714"/><line x1="1360" y1="674" x2="1360" y2="642"/><line x1="1480" y1="602" x2="1480" y2="570"/></g>
+<g transform="translate(1250 669) rotate(-30.8)">
+<rect x="-95" y="-70" width="190" height="62" rx="12" fill="#1f6b4f"/>
+<rect x="-95" y="-34" width="190" height="8" fill="#efe6d2"/>
+<g fill="#ffe29a"><rect x="-82" y="-62" width="30" height="20" rx="3"/><rect x="-42" y="-62" width="30" height="20" rx="3"/><rect x="-2" y="-62" width="30" height="20" rx="3"/><rect x="38" y="-62" width="30" height="20" rx="3"/></g>
+<circle cx="-60" cy="-4" r="7" fill="#222"/><circle cx="60" cy="-4" r="7" fill="#222"/>
+</g>
+</svg>
+</div>
+
+<!-- 4. Tian Tan Buddha -->
+<div class="slide" data-i="3">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g4sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fa9bf"/><stop offset=".7" stop-color="#f1d7b4"/><stop offset="1" stop-color="#f7e6c9"/></linearGradient>
+<linearGradient id="g4mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7e6c9" stop-opacity="0"/><stop offset="1" stop-color="#f7e6c9" stop-opacity=".85"/></linearGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#g4sky)"/>
+<path d="M0 520 Q150 380 330 470 T640 430 T980 480 T1300 400 T1600 470 L1600 900 L0 900 Z" fill="#8fb0b4" opacity=".7"/>
+<path d="M0 600 Q200 470 420 560 T800 520 T1180 570 T1600 500 L1600 900 L0 900 Z" fill="#6f979c"/>
+<rect y="540" width="1600" height="120" fill="url(#g4mist)"/>
+<path d="M0 700 Q260 610 520 680 T1000 660 T1600 690 L1600 900 L0 900 Z" fill="#4f7a77"/>
+<g transform="translate(-350 -160) scale(1.35)">
+<path d="M640 900 L860 630 L1140 630 L1360 900 Z" fill="#d6cab8"/>
+<g stroke="#a89a88" stroke-width="3"><line x1="700" y1="830" x2="1300" y2="830"/><line x1="745" y1="775" x2="1255" y2="775"/><line x1="790" y1="720" x2="1210" y2="720"/><line x1="825" y1="675" x2="1175" y2="675"/><line x1="1000" y1="630" x2="1000" y2="900"/></g>
+<rect x="860" y="590" width="280" height="40" fill="#8a7a6a"/><rect x="880" y="550" width="240" height="40" fill="#9a8a78"/><rect x="900" y="510" width="200" height="40" fill="#a89886"/>
+<path d="M910 512 Q896 400 930 332 L1070 332 Q1104 400 1090 512 Z" fill="#b0825a"/>
+<path d="M930 340 Q1000 470 1090 400" stroke="#8d6440" stroke-width="5" fill="none"/>
+<path d="M960 500 Q1000 420 1060 500" stroke="#8d6440" stroke-width="4" fill="none"/>
+<ellipse cx="1052" cy="420" rx="26" ry="38" fill="#b98d63" stroke="#8d6440" stroke-width="3"/>
+<circle cx="1000" cy="292" r="50" fill="#bd9168"/><circle cx="1000" cy="246" r="16" fill="#bd9168"/>
+<path d="M974 290 Q984 284 994 290 M1006 290 Q1016 284 1026 290" stroke="#6d4a2e" stroke-width="4" fill="none" stroke-linecap="round"/>
+<path d="M988 314 Q1000 322 1012 314" stroke="#6d4a2e" stroke-width="4" fill="none" stroke-linecap="round"/>
+</g>
+</svg>
+</div>
+
+<!-- 5. Dim sum -->
+<div class="slide" data-i="4">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<pattern id="g5slat" width="30" height="30" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><rect width="30" height="30" fill="#dcb579"/><rect y="12" width="30" height="6" fill="#c49a5d"/></pattern>
+<radialGradient id="g5tea" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#d9a066"/><stop offset="1" stop-color="#8a5428"/></radialGradient>
+<filter id="g5blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="22"/></filter>
+<g id="g5hagow"><ellipse rx="52" ry="32" fill="#f7e3da" stroke="#d8a99a" stroke-width="3"/><ellipse rx="32" ry="16" fill="#f5b9a8" opacity=".5"/><path d="M-32 -14 L-26 8 M-16 -22 L-12 12 M2 -24 L4 14 M20 -22 L20 12 M34 -14 L30 8" stroke="#d8a99a" stroke-width="3" fill="none"/></g>
+<g id="g5siumai"><circle r="36" fill="#f0b94f" stroke="#c98a22" stroke-width="3"/><circle r="36" fill="none" stroke="#d9961f" stroke-width="4" stroke-dasharray="6 5"/><circle r="21" fill="#f7cf75"/><circle r="8" fill="#e4572e"/></g>
+</defs>
+<rect width="1600" height="900" fill="#3a2417"/>
+<g stroke="#2a190f" stroke-width="4" fill="none" opacity=".7"><path d="M0 120 Q400 100 800 130 T1600 120"/><path d="M0 330 Q400 310 800 340 T1600 330"/><path d="M0 560 Q400 540 800 570 T1600 560"/><path d="M0 790 Q400 770 800 800 T1600 790"/></g>
+<circle cx="480" cy="470" r="250" fill="#b57d44" stroke="#7a4b22" stroke-width="12"/>
+<circle cx="480" cy="470" r="230" fill="none" stroke="#d3a366" stroke-width="6"/>
+<circle cx="480" cy="470" r="210" fill="url(#g5slat)"/>
+<use href="#g5hagow" transform="translate(400 400) rotate(-20)"/><use href="#g5hagow" transform="translate(565 385) rotate(15)"/>
+<use href="#g5hagow" transform="translate(352 545) rotate(40)"/><use href="#g5hagow" transform="translate(530 565) rotate(-10)"/>
+<circle cx="1130" cy="430" r="230" fill="#b57d44" stroke="#7a4b22" stroke-width="12"/>
+<circle cx="1130" cy="430" r="210" fill="none" stroke="#d3a366" stroke-width="6"/>
+<circle cx="1130" cy="430" r="192" fill="url(#g5slat)"/>
+<use href="#g5siumai" x="1062" y="362"/><use href="#g5siumai" x="1200" y="352"/><use href="#g5siumai" x="1070" y="500"/><use href="#g5siumai" x="1204" y="494"/><use href="#g5siumai" x="1134" y="428"/>
+<circle cx="840" cy="780" r="62" fill="#f3f0ea"/><circle cx="840" cy="780" r="46" fill="#2a120a"/>
+<circle cx="1400" cy="725" r="92" fill="#f7f3ec"/><circle cx="1400" cy="725" r="72" fill="url(#g5tea)"/>
+<path d="M1478 690 q62 5 56 42 q-6 38 -56 44" fill="none" stroke="#f7f3ec" stroke-width="16" stroke-linecap="round"/>
+<g stroke="#1b0f08" stroke-width="9" stroke-linecap="round"><line x1="1020" y1="830" x2="1290" y2="880"/><line x1="1008" y1="858" x2="1278" y2="900"/></g>
+<g fill="#fff" opacity=".16" filter="url(#g5blur)"><ellipse cx="470" cy="340" rx="140" ry="60"/><ellipse cx="1130" cy="300" rx="130" ry="56"/><ellipse cx="560" cy="560" rx="110" ry="46"/></g>
+</svg>
+</div>
+
+<!-- 6. Roast goose and char siu -->
+<div class="slide" data-i="5">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" style="font-family:var(--cjk);font-weight:700">
+<defs>
+<radialGradient id="g6duck" cx=".38" cy=".3" r=".85"><stop offset="0" stop-color="#f0a24a"/><stop offset=".55" stop-color="#c4561d"/><stop offset="1" stop-color="#6a210c"/></radialGradient>
+<radialGradient id="g6lamp" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#ffcf7a" stop-opacity=".5"/><stop offset="1" stop-color="#ffcf7a" stop-opacity="0"/></radialGradient>
+<linearGradient id="g6cs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8c1b22"/><stop offset=".5" stop-color="#b8333a"/><stop offset="1" stop-color="#7a161d"/></linearGradient>
+<filter id="g6glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<g id="g6duckshape">
+<ellipse cx="0" cy="30" rx="66" ry="105" fill="url(#g6duck)"/>
+<ellipse cx="4" cy="-86" rx="17" ry="46" fill="#9c3d16"/>
+<circle cx="8" cy="-138" r="18" fill="#8a3412"/>
+<path d="M22 -140 l22 6 l-22 6 Z" fill="#6a210c"/>
+<ellipse cx="-24" cy="10" rx="14" ry="62" fill="#fff" opacity=".2" transform="rotate(8 -24 10)"/>
+<path d="M-44 20 Q-20 60 -40 110" stroke="#5a1a08" stroke-width="4" fill="none" opacity=".6"/>
+</g>
+</defs>
+<rect width="1600" height="900" fill="#230d0d"/>
+<rect width="1600" height="900" fill="url(#g6lamp)"/>
+<g filter="url(#g6glow)"><rect x="560" y="60" width="480" height="120" rx="14" fill="#2a0a1e" stroke="#ff4f7b" stroke-width="6"/></g>
+<text x="800" y="150" font-size="88" text-anchor="middle" fill="#ff7a9c" letter-spacing="28">燒味</text>
+<rect x="0" y="230" width="1600" height="16" fill="#4b4b55"/>
+<g stroke="#b9b9c4" stroke-width="4"><line x1="458" y1="246" x2="458" y2="276"/><line x1="708" y1="246" x2="708" y2="276"/><line x1="958" y1="246" x2="958" y2="276"/><line x1="1208" y1="246" x2="1208" y2="276"/>
+<line x1="1356" y1="246" x2="1356" y2="290"/><line x1="1430" y1="246" x2="1430" y2="290"/><line x1="1504" y1="246" x2="1504" y2="290"/></g>
+<use href="#g6duckshape" transform="translate(450 432)"/><use href="#g6duckshape" transform="translate(700 448)"/><use href="#g6duckshape" transform="translate(950 432)"/><use href="#g6duckshape" transform="translate(1200 448)"/>
+<g>
+<rect x="1332" y="290" width="48" height="210" rx="12" fill="url(#g6cs)"/><rect x="1332" y="470" width="48" height="30" rx="10" fill="#4a0f10"/><rect x="1342" y="300" width="8" height="150" rx="4" fill="#e9a08c" opacity=".35"/>
+<rect x="1406" y="290" width="48" height="250" rx="12" fill="url(#g6cs)"/><rect x="1406" y="510" width="48" height="30" rx="10" fill="#4a0f10"/><rect x="1416" y="300" width="8" height="190" rx="4" fill="#e9a08c" opacity=".35"/>
+<rect x="1480" y="290" width="48" height="190" rx="12" fill="url(#g6cs)"/><rect x="1480" y="450" width="48" height="30" rx="10" fill="#4a0f10"/><rect x="1490" y="300" width="8" height="130" rx="4" fill="#e9a08c" opacity=".35"/>
+</g>
+<rect y="700" width="1600" height="200" fill="#3a1a12"/><rect y="700" width="1600" height="10" fill="#5a2a1c"/>
+<ellipse cx="760" cy="800" rx="280" ry="62" fill="#a8743f"/><ellipse cx="760" cy="792" rx="262" ry="50" fill="#b98550"/>
+<g transform="translate(900 764) rotate(-8)"><rect x="0" y="-30" width="170" height="72" rx="6" fill="#c9ced6"/><rect x="0" y="-30" width="170" height="10" fill="#e6e9ee"/><rect x="170" y="-8" width="124" height="26" rx="8" fill="#4a2a14"/></g>
+</svg>
+</div>
+
+<!-- 7. Milk tea and pineapple bun -->
+<div class="slide" data-i="6">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<pattern id="g7tile" width="160" height="160" patternUnits="userSpaceOnUse"><rect width="160" height="160" fill="#efe6d2"/><rect width="80" height="80" fill="#2f7a63"/><rect x="80" y="80" width="80" height="80" fill="#2f7a63"/></pattern>
+<pattern id="g7crack" width="48" height="48" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="48" height="48" fill="#e8b05a"/><path d="M0 0H48V48H0Z" fill="none" stroke="#b9772a" stroke-width="4"/></pattern>
+<radialGradient id="g7tea" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#d9a066"/><stop offset="1" stop-color="#8a5428"/></radialGradient>
+<radialGradient id="g7edge" cx=".5" cy=".5" r=".5"><stop offset=".6" stop-color="#6e3c0a" stop-opacity="0"/><stop offset="1" stop-color="#6e3c0a" stop-opacity=".5"/></radialGradient>
+<filter id="g7sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="12" dy="18" stdDeviation="14" flood-color="#000" flood-opacity=".38"/></filter>
+</defs>
+<rect width="1600" height="900" fill="url(#g7tile)"/>
+<g filter="url(#g7sh)">
+<path d="M640 410 q116 -12 110 60 q-6 74 -110 60" fill="none" stroke="#d8d0c2" stroke-width="46" stroke-linecap="round"/>
+<circle cx="500" cy="470" r="232" fill="#fbf8f2" stroke="#d8d0c2" stroke-width="6"/>
+<circle cx="500" cy="470" r="192" fill="none" stroke="#e9e2d4" stroke-width="5"/>
+<path d="M640 410 q116 -12 110 60 q-6 74 -110 60" fill="none" stroke="#fbf8f2" stroke-width="30" stroke-linecap="round"/>
+<circle cx="500" cy="470" r="152" fill="#fff" stroke="#d8d0c2" stroke-width="8"/>
+<circle cx="500" cy="470" r="128" fill="url(#g7tea)"/>
+<circle cx="466" cy="430" r="40" fill="#fff" opacity=".12"/>
+<line x1="330" y1="270" x2="440" y2="390" stroke="#cfd3da" stroke-width="10" stroke-linecap="round"/>
+</g>
+<g filter="url(#g7sh)">
+<circle cx="1120" cy="450" r="250" fill="#fbf8f2" stroke="#d8d0c2" stroke-width="6"/>
+<circle cx="1120" cy="450" r="176" fill="url(#g7crack)"/>
+<circle cx="1120" cy="450" r="176" fill="url(#g7edge)"/>
+<g transform="translate(1120 450) rotate(-14)"><rect x="-84" y="-46" width="168" height="92" rx="14" fill="#ffe9a1" stroke="#e8c964" stroke-width="4"/><rect x="-70" y="-34" width="110" height="10" rx="5" fill="#fff6cf" opacity=".9"/></g>
+</g>
+</svg>
+</div>
+
+</div>
+<div class="scrim"></div>
+
+<main id="app">
+  <div class="top">
+    <div class="tl">
+      <div class="today" id="today"></div>
+      <div class="mark">香港<span>Hong Kong</span></div>
+    </div>
+  </div>
+
+  <section class="count" aria-label="Countdown to Hong Kong">
+    <div class="when">Flight to Hong Kong · Saturday 23 January 2027</div>
+    <h1>Time until the flight to Hong Kong</h1>
+    <div class="timer" role="timer" aria-label="Time remaining until 23 January 2027">
+      <div class="cell days"><span class="num" id="d">00</span><span class="lbl">Days</span></div>
+      <div class="cell"><span class="num" id="h">00</span><span class="lbl">Hours</span></div>
+      <div class="cell"><span class="num" id="m">00</span><span class="lbl">Minutes</span></div>
+      <div class="cell"><span class="num" id="s">00</span><span class="lbl">Seconds</span></div>
+    </div>
+    <p class="sub" id="weeks"></p>
+    <p class="arrived">今日出發 · Today is the day</p>
+  </section>
+
+  <section class="wx" aria-label="Weather in Hong Kong">
+    <div class="wxhead">Weather · late January in Hong Kong</div>
+    <div class="wxrow">
+      <div class="wxitem"><span class="wxv">14–19°C</span><span class="wxl">Usual low to high</span></div>
+      <div class="wxitem"><span class="wxv">Dry</span><span class="wxl">Little rain, cool breeze</span></div>
+      <div class="wxitem"><span class="wxv">Layers</span><span class="wxl">Light jacket for evenings</span></div>
+    </div>
+    <p class="wxnote">The official 9-day forecast covers 23 January from about 14 January. Until then, check the live forecast from the Hong Kong Observatory.</p>
+    <div class="wxlinks">
+      <a href="https://www.hko.gov.hk/en/wxinfo/currwx/fnd.htm" target="_blank" rel="noopener">9-day forecast</a>
+      <a href="https://www.hko.gov.hk/en/wxinfo/currwx/current.htm" target="_blank" rel="noopener">Weather right now</a>
+    </div>
+  </section>
+
+  <nav class="navrow" aria-label="Trip details">
+    <button type="button" class="navbtn" data-sheet="rem">
+      <span class="navi"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.5 1.5L7.5 4.5M3.5 12l1.5 1.5 2.5-3M3.5 18l1.5 1.5 2.5-3"/></svg></span>
+      <span class="navx"><span class="navt">Reminders</span><span class="navm" id="metaRem">Checklist</span></span>
+      <span class="navgo" aria-hidden="true">›</span>
+    </button>
+    <button type="button" class="navbtn" data-sheet="acc">
+      <span class="navi"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19V6"/><path d="M3 15h18v4"/><path d="M21 15v-2.5A3.5 3.5 0 0 0 17.5 9H11v6"/><circle cx="7" cy="11.5" r="1.8"/></svg></span>
+      <span class="navx"><span class="navt">Accommodation</span><span class="navm" id="metaAcc">Not added yet</span></span>
+      <span class="navgo" aria-hidden="true">›</span>
+    </button>
+    <button type="button" class="navbtn" data-sheet="itn">
+      <span class="navi"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.3a6.5 6.5 0 0 1 13 0C18.5 15.6 12 21 12 21Z"/><circle cx="12" cy="10.7" r="2.4"/></svg></span>
+      <span class="navx"><span class="navt">Itinerary</span><span class="navm" id="metaItn">Day by day</span></span>
+      <span class="navgo" aria-hidden="true">›</span>
+    </button>
+  </nav>
+
+  <div class="bottom">
+    <div class="cap" id="cap">
+      <div class="kind" id="capKind">Place</div>
+      <p class="name" id="capName">Victoria Harbour</p>
+      <div class="zh" id="capZh">維多利亞港</div>
+      <p class="note" id="capNote">The skyline at dusk, with a red-sailed junk crossing the water.</p>
+    </div>
+    <div class="dots" id="dots" role="tablist" aria-label="Background scenes"></div>
+  </div>
+</main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="bd" id="sheetBd"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="phead">
+      <h2 id="sheetTitle">Reminders</h2>
+      <button type="button" class="close" id="sheetClose" aria-label="Close">Close</button>
+    </div>
+    <div id="sheetBody"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TARGET = new Date('2027-01-23T00:00:00+08:00').getTime();
+  var el = function (id) { return document.getElementById(id); };
+  var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+
+  function tick() {
+    var diff = Math.max(0, TARGET - Date.now());
+    var days = Math.floor(diff / 86400000);
+    var hrs = Math.floor(diff / 3600000) % 24;
+    var min = Math.floor(diff / 60000) % 60;
+    var sec = Math.floor(diff / 1000) % 60;
+    el('d').textContent = pad(days);
+    el('h').textContent = pad(hrs);
+    el('m').textContent = pad(min);
+    el('s').textContent = pad(sec);
+    var w = Math.floor(days / 7), r = days % 7;
+    el('weeks').textContent = diff > 0
+      ? (w ? w + (w === 1 ? ' week ' : ' weeks ') : '') + r + (r === 1 ? ' day' : ' days') + ' to go'
+      : '';
+    document.getElementById('app').classList.toggle('is-done', diff === 0);
+  }
+  function showDate() {
+    el('today').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  showDate();
+  tick();
+  setInterval(tick, 250);
+  setInterval(showDate, 60000);
+
+  var info = [
+    { kind: 'Place', name: 'Victoria Harbour', zh: '維多利亞港', note: 'The skyline at dusk, with a red-sailed junk crossing the water.' },
+    { kind: 'Place', name: 'Mong Kok neon', zh: '旺角', note: 'Vertical signs, wet pavement and a red taxi after dark.' },
+    { kind: 'Place', name: 'Victoria Peak', zh: '太平山', note: 'The tram climbs above the city lights and the harbour.' },
+    { kind: 'Place', name: 'Tian Tan Buddha', zh: '天壇大佛', note: 'Reached by 268 steps on Lantau Island.' },
+    { kind: 'Food', name: 'Dim sum', zh: '點心', note: 'Har gow and siu mai in bamboo steamers, with tea.' },
+    { kind: 'Food', name: 'Roast goose and char siu', zh: '燒鵝 叉燒', note: 'Glazed meats hanging in the shop window.' },
+    { kind: 'Food', name: 'Milk tea and pineapple bun', zh: '港式奶茶 菠蘿油', note: 'A cha chaan teng breakfast: a hot bun with a slab of butter.' }
+  ];
+
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dotsBox = el('dots');
+  var cap = el('cap');
+  var cur = 0, timer = null, DURATION = 6500;
+
+  info.forEach(function (it, i) {
+    var b = document.createElement('button');
+    b.className = 'dotbtn' + (i === 0 ? ' on' : '');
+    b.type = 'button';
+    b.setAttribute('aria-label', it.name);
+    b.innerHTML = '<span class="dot"></span>';
+    b.addEventListener('click', function () { go(i); restart(); });
+    dotsBox.appendChild(b);
+  });
+  var dotBtns = Array.prototype.slice.call(dotsBox.children);
+
+  function go(i) {
+    slides[cur].classList.remove('on');
+    dotBtns[cur].classList.remove('on');
+    cur = i;
+    slides[cur].classList.add('on');
+    void dotBtns[cur].offsetWidth;
+    dotBtns[cur].classList.add('on');
+    var it = info[cur];
+    el('capKind').textContent = it.kind;
+    el('capName').textContent = it.name;
+    el('capZh').textContent = it.zh;
+    el('capNote').textContent = it.note;
+    cap.classList.remove('swap');
+    void cap.offsetWidth;
+    cap.classList.add('swap');
+  }
+  function next() { go((cur + 1) % slides.length); }
+  function restart() { clearInterval(timer); timer = setInterval(next, DURATION); }
+  restart();
+})();
+</script>
+<script>
+(function () {
+  var KEY = 'hk-trip-2027';
+  var START = Date.UTC(2027, 0, 23);
+
+  var DEFAULT = {
+    rem: [
+      { t: 'Check your passport is valid for at least 6 months', d: false, c: 'todo' },
+      { t: 'Check Hong Kong entry rules for your passport and complete any online registration', d: false, c: 'todo' },
+      { t: 'Confirm flights and hotel bookings', d: false, c: 'todo' },
+      { t: 'Buy travel insurance', d: false, c: 'todo' },
+      { t: 'Get an eSIM or roaming plan', d: false, c: 'todo' },
+      { t: 'Set up an Octopus card or mobile payment', d: false, c: 'todo' },
+      { t: 'Save your hotel address in Chinese for taxis', d: false, c: 'todo' },
+      { t: 'Passport and booking confirmations', d: false, c: 'bring' },
+      { t: 'Bring a Type G plug adapter (220V)', d: false, c: 'bring' },
+      { t: 'Pack a light jacket for cool evenings', d: false, c: 'bring' },
+      { t: 'Foldable tote bag for shopping', d: false, c: 'bring' },
+      { t: 'Reusable water bottle', d: false, c: 'bring' },
+      { t: 'Comfortable walking shoes', d: false, c: 'bring' },
+      { t: 'Power bank', d: false, c: 'bring' },
+      { t: 'Some Hong Kong dollars in cash for cash-only spots', d: false, c: 'bring' }
+    ],
+    days: 5,
+    itn: {
+      0: [{ time: '15:00', t: 'Arrive and check in', s: 1 }, { time: '19:00', t: 'Victoria Harbour at dusk', s: 1 }],
+      1: [{ time: '09:00', t: 'Dim sum breakfast', s: 1 }, { time: '11:00', t: 'Tian Tan Buddha, Lantau Island', s: 1 }],
+      2: [{ time: '17:00', t: 'Victoria Peak at sunset', s: 1 }],
+      3: [{ time: '18:30', t: 'Mong Kok street food and neon', s: 1 }],
+      4: []
+    },
+    food: {
+      0: [{ k: 'food', t: 'Egg waffles, a classic street snack', s: 1 }, { k: 'food', t: 'Egg tarts at Tai Cheong Bakery, Central', s: 1 }, { k: 'shop', t: 'Chun Yeung Street Market, North Point', s: 1 }],
+      1: [{ k: 'food', t: 'Vegetarian lunch at Po Lin Monastery, Ngong Ping', s: 1 }, { k: 'shop', t: 'Souvenirs at Ngong Ping Village', s: 1 }],
+      2: [{ k: 'food', t: 'Milk tea at Lan Fong Yuen, Central', s: 1 }, { k: 'food', t: 'Beef brisket noodles at Kau Kee, Central', s: 1 }, { k: 'shop', t: 'PMQ design shops, Central', s: 1 }],
+      3: [{ k: 'food', t: 'Snacks and a meal inside the park', s: 1 }, { k: 'shop', t: 'Souvenirs from the park shops', s: 1 }],
+      4: [{ k: 'food', t: 'Scrambled eggs and toast at Australia Dairy Company, Jordan', s: 1 }, { k: 'shop', t: 'Ladies’ Market, Mong Kok', s: 1 }, { k: 'shop', t: 'Temple Street Night Market', s: 1 }]
+    }
+  };
+
+  var state;
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var o = JSON.parse(raw); if (o && o.rem && o.itn) {
+        if (!o.food) o.food = JSON.parse(JSON.stringify(DEFAULT.food));
+        if (o.rem.some(function (r) { return !r.c; })) {
+          o.rem.forEach(function (r) { if (!r.c) r.c = /adapter|jacket|bring|pack/i.test(r.t) ? 'bring' : 'todo'; });
+          DEFAULT.rem.forEach(function (d) {
+            if (d.c === 'bring' && !o.rem.some(function (r) { return r.t === d.t; })) o.rem.push(JSON.parse(JSON.stringify(d)));
+          });
+        }
+        return o;
+      } }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT));
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} meta(); track(); }
+  state = load();
+
+  function $(id) { return document.getElementById(id); }
+  function h(tag, props, kids) {
+    var e = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (k) {
+      var v = props[k];
+      if (k === 'class') e.className = v;
+      else if (k === 'text') e.textContent = v;
+      else if (k === 'html') e.innerHTML = v;
+      else if (k.slice(0, 2) === 'on') e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v);
+    });
+    (kids || []).forEach(function (c) { e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function dayLabel(i) {
+    return new Date(START + i * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  }
+
+  function meta() {
+    var done = state.rem.filter(function (r) { return r.d; }).length;
+    $('metaRem').textContent = done + ' of ' + state.rem.length + ' done';
+    $('metaAcc').textContent = ACC.name;
+    var n = 0;
+    for (var i = 0; i < state.days; i++) n += (state.itn[i] || []).length;
+    $('metaItn').textContent = state.days + ' days · ' + n + ' stops';
+  }
+
+  var sheet = $('sheet'), body = $('sheetBody'), current = null, opener = null;
+
+  function refocus(id) { var el = $(id); if (el) el.focus(); }
+
+  function renderRem(focusId) {
+    body.textContent = '';
+    body.appendChild(h('p', { class: 'hint', text: 'Suggested preparations, split into things to do and things to bring. Tick them off, remove what you do not need, or add your own. Confirm entry rules with an official source before you fly.' }));
+    [['todo', 'To do', 'Add something to do'], ['bring', 'To bring', 'Add something to bring']].forEach(function (cat) {
+      var key = cat[0];
+      var idxs = [];
+      state.rem.forEach(function (r, i) { if ((r.c || 'todo') === key) idxs.push(i); });
+      var nd = idxs.filter(function (i) { return state.rem[i].d; }).length;
+      body.appendChild(h('div', { class: 'rsec' }, [h('h3', { class: 'rh', text: cat[1] }), h('span', { class: 'rc', text: nd + ' of ' + idxs.length + ' done' })]));
+      var ul = h('ul', { class: 'list' });
+      idxs.forEach(function (i) {
+        var r = state.rem[i];
+        var cb = h('input', { type: 'checkbox', id: 'rem-c-' + i });
+        cb.checked = r.d;
+        cb.addEventListener('change', function () { r.d = cb.checked; save(); renderRem('rem-c-' + i); });
+        ul.appendChild(h('li', { class: 'row' + (r.d ? ' done' : '') }, [
+          h('label', { for: 'rem-c-' + i }, [cb, h('span', { text: r.t })]),
+          h('button', { type: 'button', class: 'x', 'aria-label': 'Remove ' + r.t, onclick: function () { state.rem.splice(i, 1); save(); renderRem('rem-new-' + key); }, title: 'Remove', html: ICON.del })
+        ]));
+      });
+      body.appendChild(ul);
+      var inp = h('input', { type: 'text', id: 'rem-new-' + key, placeholder: cat[2], autocomplete: 'off', 'aria-label': cat[2] });
+      var f = h('form', { class: 'add' }, [inp, h('button', { type: 'submit', class: 'btn go', text: 'Add' })]);
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = inp.value.trim();
+        if (!v) return;
+        state.rem.push({ t: v, d: false, c: key });
+        save(); renderRem('rem-new-' + key);
+      });
+      body.appendChild(f);
+    });
+    body.appendChild(h('div', { class: 'acts' }, [
+      h('button', { type: 'button', class: 'btn go', text: 'Save reminders', onclick: function (e) { saveKind('rem', e.currentTarget); } }),
+      (statusEl = h('span', { class: 'saved', 'aria-live': 'polite' }))
+    ]));
+    updateStatus();
+    if (focusId) refocus(focusId);
+  }
+
+  var ACC = {
+    name: 'Hotel Alexandra',
+    addr: '32 City Garden Rd, North Point, Hong Kong Island, Hong Kong',
+    cin: 'Saturday, 23 Jan 2027',
+    cout: 'Thursday, 28 Jan 2027',
+    ref: '1799411462'
+  };
+  function renderAcc() {
+    body.textContent = '';
+    var rows = [['Hotel', ACC.name], ['Address', ACC.addr], ['Check-in', ACC.cin], ['Check-out', ACC.cout], ['Booking reference', ACC.ref]];
+    var dl = h('dl', { class: 'facts' });
+    rows.forEach(function (r) {
+      dl.appendChild(h('div', { class: 'fact' }, [h('dt', { text: r[0] }), h('dd', { text: r[1] })]));
+    });
+    body.appendChild(dl);
+    body.appendChild(h('div', { class: 'acts' }, [
+      h('a', { class: 'btn go', target: '_blank', rel: 'noopener', style: 'text-decoration:none', text: 'Open in Maps',
+        href: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(ACC.name + ', ' + ACC.addr) })
+    ]));
+  }
+
+  var SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  var ICON = {
+    edit: SVG + '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    del: SVG + '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>'
+  };
+  function todayIdx() {
+    try {
+      var p = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Hong_Kong' }).split('-');
+      return Math.round((Date.UTC(+p[0], +p[1] - 1, +p[2]) - START) / 86400000);
+    } catch (e) { return -1; }
+  }
+  var PARK_DAY = 3;
+  var PARK_SVG = '<svg viewBox="0 0 600 140" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">' +
+    '<defs><linearGradient id="pkSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1450"/><stop offset=".55" stop-color="#7a3fae"/><stop offset=".85" stop-color="#ff7aa8"/><stop offset="1" stop-color="#ffd27a"/></linearGradient></defs>' +
+    '<rect width="600" height="140" fill="url(#pkSky)"/>' +
+    '<g fill="#fff"><circle class="tw" cx="40" cy="22" r="1.6"/><circle class="tw d2" cx="120" cy="48" r="1.4"/><circle class="tw" cx="210" cy="16" r="1.8"/><circle class="tw d2" cx="290" cy="60" r="1.3"/><circle class="tw" cx="350" cy="18" r="1.6"/><circle class="tw d2" cx="170" cy="86" r="1.2"/><circle class="tw" cx="580" cy="30" r="1.5"/></g>' +
+    '<g stroke-width="2.4" stroke-linecap="round" fill="none">' +
+    '<g stroke="#ffd166" transform="translate(330 44)"><path d="M0-22V-10M0 10V22M-22 0H-10M10 0H22M-16-16l8 8M8 8l8 8M16-16l-8 8M-8 8l-8 8"/></g>' +
+    '<g stroke="#8cf5e0" transform="translate(250 30) scale(.7)"><path d="M0-22V-10M0 10V22M-22 0H-10M10 0H22M-16-16l8 8M8 8l8 8M16-16l-8 8M-8 8l-8 8"/></g>' +
+    '<g stroke="#fff3c4" transform="translate(410 22) scale(.55)"><path d="M0-22V-10M0 10V22M-22 0H-10M10 0H22M-16-16l8 8M8 8l8 8M16-16l-8 8M-8 8l-8 8"/></g>' +
+    '</g>' +
+    '<g fill="#1b1240"><rect x="400" y="96" width="180" height="44"/>' +
+    '<rect x="470" y="52" width="40" height="88"/><polygon points="462,54 518,54 490,14"/><rect x="489" y="3" width="2" height="12"/><polygon points="491,3 503,7 491,11" fill="#ff4f7b"/>' +
+    '<rect x="420" y="72" width="28" height="68"/><polygon points="414,74 454,74 434,42"/>' +
+    '<rect x="532" y="72" width="28" height="68"/><polygon points="526,74 566,74 546,42"/>' +
+    '<rect x="450" y="86" width="14" height="54"/><polygon points="447,88 467,88 457,68"/>' +
+    '<rect x="516" y="86" width="14" height="54"/><polygon points="513,88 533,88 523,68"/></g>' +
+    '<g fill="#ffd27a"><rect x="486" y="72" width="8" height="14" rx="4"/><rect x="430" y="94" width="8" height="12" rx="4"/><rect x="542" y="94" width="8" height="12" rx="4"/></g>' +
+    '<rect y="128" width="600" height="12" fill="#120c33"/></svg>';
+  var editing = null;
+  /* Website storage: reminders and itinerary live in the page's shared db, written only when Save is pressed. */
+  var dbRef = null, statusEl = null;
+  var DOCS = { rem: 'trip/reminders', itn: 'trip/itinerary' };
+  var savedSig = { rem: null, itn: null }, touched = { rem: false, itn: false };
+  function sig(kind) { return JSON.stringify(kind === 'rem' ? state.rem : { days: state.days, itn: state.itn, food: state.food }); }
+  var lastSig = { rem: sig('rem'), itn: sig('itn') };
+  function track() {
+    ['rem', 'itn'].forEach(function (k) {
+      var s = sig(k);
+      if (s !== lastSig[k]) { touched[k] = true; lastSig[k] = s; }
+    });
+    updateStatus();
+  }
+  function updateStatus() {
+    if (!statusEl || (current !== 'rem' && current !== 'itn')) return;
+    statusEl.textContent = !dbRef ? 'Saved on this device only' : (savedSig[current] === sig(current) ? 'Saved to the website' : 'Not saved to the website yet');
+  }
+  function applyDoc(kind, d) {
+    if (touched[kind] || !d) return;
+    var next;
+    if (kind === 'rem') {
+      if (!Array.isArray(d.items)) return;
+      next = JSON.parse(JSON.stringify(d.items));
+    } else {
+      if (typeof d.days !== 'number' || !d.itn) return;
+      next = { days: d.days, itn: JSON.parse(JSON.stringify(d.itn)), food: JSON.parse(JSON.stringify(d.food || state.food)) };
+    }
+    var s = JSON.stringify(next);
+    savedSig[kind] = s;
+    if (s !== sig(kind)) {
+      if (kind === 'rem') state.rem = next; else { state.days = next.days; state.itn = next.itn; state.food = next.food; }
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      lastSig[kind] = sig(kind);
+      meta();
+      if (!sheet.hidden && current === kind && !editing) { if (kind === 'rem') renderRem(); else renderItn(); }
+    }
+    updateStatus();
+  }
+  try {
+    if (window.claude && window.claude.use) window.claude.use('db').then(function (db) {
+      if (!db) return;
+      try {
+        dbRef = db;
+        ['rem', 'itn'].forEach(function (k) {
+          db.doc(DOCS[k]).onSnapshot(function (s) { if (s.exists) applyDoc(k, s.data()); updateStatus(); }, function () {});
+        });
+        updateStatus();
+      } catch (e) { dbRef = null; }
+    }, function () {});
+  } catch (e) {}
+  function saveKind(kind, btn) {
+    var s = sig(kind), old = btn.textContent;
+    if (!dbRef) { updateStatus(); return; }
+    var payload = kind === 'rem' ? { items: JSON.parse(s) } : JSON.parse(s);
+    btn.disabled = true;
+    dbRef.doc(DOCS[kind]).set(payload).then(function () {
+      savedSig[kind] = s; touched[kind] = sig(kind) !== s; btn.disabled = false;
+      btn.textContent = 'Saved';
+      setTimeout(function () { btn.textContent = old; }, 1800);
+      updateStatus();
+    }, function (e) {
+      btn.disabled = false;
+      if (statusEl) statusEl.textContent = (e && e.code === 'invalid_argument') ? 'Only the owner can save to the website. Kept on this device.' : 'Could not save to the website. Kept on this device.';
+    });
+  }
+
+  /* Detailed day plans (read-only). Days 2 to 5 are placeholders until their details are added. */
+  var PLAN = [
+    {
+      label: `Day 1`,
+      tag: `Arrival Day`,
+      title: `Wan Chai, Causeway Bay & Snack/Grocery Haul`,
+      window: `2:30 PM – 9:30 PM`,
+      note: `Everything is 1–2 MTR stops (3–5 minutes) from Hotel Alexandra on the Island Line.`,
+      rows: [
+        { time: `2:30 PM`, stop: `Wan Chai`,
+          lead: `Drop bags at Hotel Alexandra. Ride the Island Line 2 stops west to Wan Chai MTR (Exit A3). Walk through Lee Tung Avenue, see the historic Blue House, and stroll the harbourfront promenade.` },
+        { time: `4:00 PM`, stop: `Coffee & Dim Sum Snack`, picks: [`Blue Bottle Coffee`, `Lung Dim Sum`],
+          items: [
+            { n: `Blue Bottle Coffee`, a: `15 St. Francis St, Wan Chai or 38 Times Square, CWB`, d: `Known for specialty pour-over coffee, New Orleans-style iced coffee, and waffles.` },
+            { n: `Lung Dim Sum`, a: `216–218 Hennessy Rd, Wan Chai or 24–30 Percival St, CWB`, d: `Known for colorful, modern dim sum platters, truffle siu mai, and creative steamed buns.` }
+          ] },
+        { time: `5:00 PM`, stop: `Brandy Melville & Causeway Bay`,
+          lead: `Continue east to Causeway Bay MTR (Exit A):`,
+          items: [
+            { n: `Brandy Melville`, a: `G/F–3/F, Oliv, 15 Sharp St E`, d: `2-minute walk behind Times Square; visit early before the evening fitting room rush (open until 9:00 PM).` },
+            { n: `Causeway Bay Malls`, d: `Browse Times Square, Hysan Place, and Jardine's Crescent.` }
+          ] },
+        { time: `7:00 PM`, stop: `Dinner in Wan Chai / Causeway Bay`, picks: [`Chung Kee Restaurant`, `Dim Dim Sum`],
+          items: [
+            { n: `Chung Kee Restaurant`, a: `2/F, Lockhart Rd Municipal Building, Wan Chai`, d: `Known for classic Cantonese indoor dai pai dong wok stir-fries, salt-and-pepper squid, and typhoon shelter dishes.` },
+            { n: `Dim Dim Sum`, a: `7 Tin Lok Ln, Wan Chai — open late`, d: `Known for crispy shrimp rice rolls (cheung fun), molten custard piggy buns, and pineapple buns with real pineapple.` }
+          ] },
+        { time: `8:15 PM`, stop: `Beauty, Chocolate & Grocery Haul`,
+          lead: `Pick up your pasalubong, drinks, and room snacks on your way back to Hotel Alexandra (bring a foldable tote bag):`,
+          items: [
+            { n: `Lung Fung Mall`, a: `Shop G01–G03 & 1/F, LAFORET, 24–26 East Point Rd, CWB — or 135 King's Rd, North Point`, sep: ` `, d: `for discounted cosmetics and snacks.` },
+            { n: `DS Groceries`, a: `18 Causeway Rd, CWB — or 28 Marble Rd, North Point`, sep: ` `, d: `for affordable imported chocolates.` },
+            { n: `Best Mart 360 & Wellcome Supermarket`, a: `King's Rd, right outside Fortress Hill MTR Exit B`, sep: ` `, d: `for water, fruit, and room snacks before heading up to rest.` }
+          ] }
+      ]
+    },
+    {
+      label: `Day 2`,
+      title: `Western & Central HK Island → Star Ferry → Tsim Sha Tsui`,
+      note: `Focus: Coastal mornings, ceramics, Old Town Central cafes/pastries, Star Ferry sunset, and TST waterfront.`,
+      rows: [
+        { time: `9:30 AM`, stop: `Old Kennedy Town`,
+          lead: `Take the Island Line west from Fortress Hill directly to Kennedy Town MTR (Exit C). Walk along the waterfront promenade and grab a light breakfast.` },
+        { time: `11:00 AM`, stop: `Sai Ying Pun (Ceramics)`,
+          lead: `Ride the Ding Ding tram or MTR 1 stop east to Sai Ying Pun MTR (Exit B2) to browse local ceramic studios and traditional porcelain stalls.` },
+        { time: `12:30 PM`, stop: `Old Town Central Lunch & Cafe Hop`, picks: [`Halfway Coffee`, `Lin Heung Lau`, `Lan Fong Yuen`],
+          lead: `Take the MTR to Sheung Wan MTR (Exit A2) to start your Old Town Central walk:`,
+          items: [
+            { n: `Halfway Coffee`, a: `17 Connaught Rd W / 26 Upper Lascar Row, Sheung Wan`, d: `Known for specialty flat whites, longan honey lattes, and serving drinks in vintage Chinese porcelain cups.` },
+            { n: `Lin Heung Lau`, a: `249–253 Des Voeux Rd Central, Sheung Wan`, d: `Known for old-school pushcart dim sum trolleys, char siu bao, and traditional Cantonese teahouse atmosphere (cash/Octopus only).` },
+            { n: `Lan Fong Yuen`, a: `2 Gage St, Central`, d: `Known as the birthplace of Hong Kong "silk stocking" milk tea, crispy pork chop buns, and French toast (cash only; closes ~5:30 PM).` }
+          ] },
+        { time: `2:00 PM`, stop: `Old Town Central Walking Loop & Pastries`, picks: [`Blue Bottle Coffee`, `Vission Bakery`, `Cheung Hing Kee`],
+          lead: `Walk east through these adjacent hillside streets in order (Hollywood Road → Shing Wong Street → Graham Street → Shelley Street → Lan Kwai Fong) and stop at:`,
+          items: [
+            { n: `Blue Bottle Coffee`, a: `38–42 Lyndhurst Terrace`, d: `Known for single-origin pour-overs, gibraltars, and minimalist two-story cafe space.` },
+            { n: `Vission Bakery`, a: `LG/F, 7 Staunton St, SoHo`, d: `Known for viral Matcha Mochi Danish, pistachio/cinnamon rolls, and flaky puff pastry egg tarts.` },
+            { n: `Cheung Hing Kee`, a: `48 Lyndhurst Terrace`, d: `Known for Michelin-recommended Shanghai pan-fried soup buns (sheng jian bao) with crispy bottoms and hot broth inside.` }
+          ] },
+        { time: `4:30 PM`, stop: `Star Ferry & Tsim Sha Tsui Waterfront`,
+          lead: `Walk 10 minutes from Central to Central Pier 7 and ride the Star Ferry across Victoria Harbour to Tsim Sha Tsui (arrive before 6:00 PM if going inside HKMoA):`,
+          items: [
+            { n: `1881 Heritage (2A Canton Rd) & Canton Road luxury boulevard.` },
+            { n: `HK Cultural Centre, Hong Kong Museum of Art, K11 MUSEA, and the Avenue of Stars as the skyline lights up at dusk.` }
+          ] },
+        { time: `7:30 PM`, stop: `Dinner in Tsim Sha Tsui`, picks: [`Dragon Delight Kitchen`, `Cheung Hing Kee (TST branch)`],
+          items: [
+            { n: `Dragon Delight Kitchen`, a: `8/F, Mangan Bldg, 42 Cameron Rd, TST`, d: `Known for affordable, generous Cantonese rice and noodle plates, claypot dishes, and local comfort food.` },
+            { n: `Cheung Hing Kee`, a: `48 Lock Rd, TST`, d: `Known for pan-fried soup buns (great backup if you missed the Central branch).` },
+            { n: `Take the MTR (Tsuen Wan Line → Admiralty → Island Line) back to Hotel Alexandra.` }
+          ] }
+      ]
+    },
+    {
+      label: `Day 3`,
+      title: `Kowloon Peninsula (Nan Lian Garden → M+ → Mong Kok & Jordan)`,
+      note: `Focus: Morning Tang Dynasty garden, M+ Museum, Prince Edward/Mong Kok snacks and night markets, and late-night dessert.`,
+      rows: [
+        { time: `9:30 AM`, stop: `Nan Lian Garden`, picks: [`Men Wah Bing Teng (Plaza Hollywood)`],
+          lead: `Take the MTR from Fortress Hill to Diamond Hill MTR (Exit C2) (transfer at North Point/Yau Tong) for a peaceful morning walk through the koi ponds and wooden pavilions.`,
+          items: [
+            { n: `Men Wah Bing Teng`, a: `Plaza Hollywood`, d: `If you want breakfast right outside the garden, it opens at 7:00 AM and is known for classic Hong Kong cha chaan teng breakfast sets, BBQ pork rice, and milk tea.` }
+          ] },
+        { time: `11:30 AM`, stop: `M+ Museum`,
+          lead: `Take the Tuen Ma Line to Austin MTR (Exit D) or Kowloon MTR (Exit E4) and explore M+ Museum (allow ~2.5–3 hours, plus time for lunch at Elements Mall or museum cafes).` },
+        { time: `4:30 PM`, stop: `Prince Edward & Flower Market Snacks`, picks: [`Kam Wah Cafe & Cake Shop`, `One Dim Sum`],
+          lead: `Take the MTR directly to Prince Edward MTR (Exit B1), stroll Flower Market Road (visit before 6:00 PM closing), and stop at:`,
+          items: [
+            { n: `Kam Wah Cafe & Cake Shop`, a: `45–47 Bute St`, d: `Known for Hong Kong's most famous hot pineapple bun with a thick slab of cold butter (bo lo yau), egg tarts, and milk tea (cash/Octopus only).` },
+            { n: `One Dim Sum`, a: `G/F, 209A Tung Choi St`, d: `Known for budget-friendly, made-to-order dim sum, steamed shrimp dumplings (har gow), and sticky rice in lotus leaf (cash only).` }
+          ] },
+        { time: `6:00 PM`, stop: `Mong Kok Night Loop`,
+          lead: `Walk south from Prince Edward straight into the heart of Mong Kok:`,
+          items: [
+            { n: `T.O.P (This is Our Place) & INCUBASE Arena`, a: `T.O.P: 700 Nathan Rd · INCUBASE Arena: 601 Nathan Rd`, d: `enter INCUBASE before 9:00 PM last exhibition entry.` },
+            { n: `Sneakers Street & Ladies' Market`, a: `Fa Yuen St and Tung Choi St`, sep: ` `, d: `for night market shopping.` },
+            { n: `Portland Street`, a: `one block west of Nathan Rd`, sep: ` `, d: `for glowing neon signs and late-night street energy.` }
+          ] },
+        { time: `8:30 PM`, stop: `Late Dinner & Dessert`, picks: [`Ladies Street Sik Faan Co.`, `Dim Dim Sum (Mong Kok branch)`, `Kai Kai Dessert`],
+          items: [
+            { n: `Ladies Street Sik Faan Co.`, a: `1/F, 1A–1L Tung Choi St, Mong Kok`, d: `Known for retro 1980s dai pai dong vibes, scallion oil chicken, sweet and sour pork, and claypot dishes.` },
+            { n: `Dim Dim Sum`, a: `106–112 Tung Choi St, Mong Kok — open until 1:00 AM`, d: `Known for late-night dim sum, crispy shrimp rice rolls, and molten custard piggy buns.` },
+            { n: `Kai Kai Dessert`, a: `113–115 Parkes St, Jordan — 1 stop south via Jordan MTR Exit A, open until 1:00 AM`, d: `Known for Michelin-recommended traditional Chinese sweet soups, black sesame paste, walnut soup, and mango pomelo sago.` },
+            { n: `Take the MTR back to Hotel Alexandra.` }
+          ] }
+      ]
+    },
+    {
+      label: `Day 4`,
+      title: `Hong Kong Disneyland`,
+      theme: 'park',
+      note: `A full park day. Check opening hours, show times and wait times in the Hong Kong Disneyland app on the day, as they change.`,
+      rows: [
+        { time: `Morning`, stop: `Getting there`,
+          lead: `Ride the MTR to Central, then take the Tung Chung Line to Sunny Bay and change to the Disneyland Resort Line. It is about 40 minutes from Central.` },
+        { time: `Opening`, stop: `Head straight to the big rides`,
+          lead: `Gates sometimes open before the posted time, so arrive early and go to the longest-queue rides first:`,
+          items: [
+            { n: `Big Grizzly Mountain Runaway Mine Cars`, d: `minimum height 112 cm.` },
+            { n: `Frozen Ever After`, d: `no height requirement.` }
+          ] },
+        { time: `Midday`, stop: `Lunch`,
+          lead: `Eat early or late to avoid the midday rush. Book table-service restaurants in the app. Starline Diner in Tomorrowland serves Marvel-themed burgers.` },
+        { time: `Afternoon`, stop: `Rides and shows`,
+          lead: `Check the parade and show schedule in the app, then fit in:`,
+          items: [
+            { n: `Mystic Manor`, d: `no height requirement.` },
+            { n: `Hyperspace Mountain`, d: `minimum height 102 cm.` },
+            { n: `Iron Man Experience`, d: `minimum height 102 cm.` },
+            { n: `Festival of the Lion King`, d: `a stage show in English, if the timing fits.` }
+          ] },
+        { time: `Night`, stop: `Momentous fireworks`,
+          lead: `The park-closing show, with fireworks and projections on the castle and Main Street. Check the exact time in the app and claim a spot early on a busy day. Popular spots:`,
+          items: [
+            { n: `The Hub, on the right side of the castle as you face it`, d: `the castle doesn't block your view.` },
+            { n: `The end of Main Street, near the train station`, d: `a straight-on view.` }
+          ] },
+        { time: `After`, stop: `Wrap up`,
+          lead: `Main Street and the Hub are quieter after the finale, which is good for photos. Then take the Disneyland Resort Line back to Sunny Bay.` }
+      ],
+      tipsets: [{ h: `Tips for the park`, l: [
+        `Download the app and log in before you go. It shows live wait times.`,
+        `Tickets are for a specific date, so buy yours online ahead of time.`,
+        `Take a locker near the entrance as soon as you arrive. They fill up.`,
+        `Premier Access is paid and can sell out. It is most useful for Big Grizzly Mountain, Frozen Ever After and Mystic Manor.`,
+        `Bring a reusable water bottle. There are refill stations in the park.`,
+        `Wear comfortable shoes and bring a light jacket for the evening.`,
+        `If queues are long, skip Dumbo and the Mad Hatter Teacups first.`
+      ] }, { h: `Momentous fireworks tips`, l: [
+        `Check the show time in the app. It runs at park closing and can start later on busy days.`,
+        `Pick your spot early. A good spot can fill up fast.`,
+        `Stand on the right side of the castle, facing it, so it doesn't block the view.`,
+        `If it rains, bring a poncho, not an umbrella. Umbrellas block other people's view.`,
+        `Stay for the finale, then take photos on Main Street while the crowds thin out.`,
+        `Premier Access is paid and includes a reserved viewing area, if you want a guaranteed spot.`
+      ] }],
+    },
+    {
+      label: `Day 5`,
+      title: `Lantau Island (Ngong Ping Village & Citygate Outlets)`,
+      note: `Focus: Scenic mountain cable car, Big Buddha, outlet shopping, and final packing before your morning flight.`,
+      rows: [
+        { time: `9:30 AM`, stop: `Ngong Ping 360 & Ngong Ping Village (Lantau)`,
+          lead: `Take the MTR from Fortress Hill to Tung Chung MTR (Exit B) (transfer at Central/Hong Kong Station). Ride the Ngong Ping 360 cable car up to Ngong Ping Village, Tian Tan Buddha, and Po Lin Monastery.` },
+        { time: `2:00 PM`, stop: `Citygate Outlets Mall`,
+          lead: `Ride the cable car back down to Tung Chung—Citygate Outlets connects directly to the terminal for late lunch and afternoon outlet shopping.` },
+        { time: `5:30 PM`, stop: `Final Packing & Early Night`,
+          lead: `Ride the Tung Chung Line back to Hong Kong Island. Grab any last-minute pasalubong or room snacks at Wellcome / Best Mart 360 outside Fortress Hill MTR, pack your luggage, and get to bed early for your morning flight.` }
+      ]
+    },
+    { label: `Day 6`, tag: `Thank you HK`, rows: [] }
+  ];
+  var planView = 'plan';
+  var planDay = (function () { var t = todayIdx(); return t >= 0 && t < PLAN.length ? t : 0; })();
+
+  function viewTabs() {
+    var wrap = h('div', { class: 'seg', role: 'tablist', 'aria-label': 'Itinerary view' });
+    [['plan', 'Day plans'], ['mine', 'My stops']].forEach(function (p) {
+      wrap.appendChild(h('button', {
+        type: 'button', role: 'tab', class: 'segb' + (planView === p[0] ? ' on' : ''), 'aria-selected': planView === p[0] ? 'true' : 'false', text: p[1],
+        onclick: function () { planView = p[0]; renderItn(); }
+      }));
+    });
+    return wrap;
+  }
+
+  function renderPlan() {
+    var tabs = h('div', { class: 'dtabs', role: 'tablist', 'aria-label': 'Choose a day' });
+    PLAN.forEach(function (p, i) {
+      tabs.appendChild(h('button', {
+        type: 'button', role: 'tab', class: 'dtab' + (i === planDay ? ' on' : ''), 'aria-selected': i === planDay ? 'true' : 'false',
+        onclick: function () { planDay = i; renderItn(); }
+      }, [h('span', { class: 'dtn', text: p.label }), h('span', { class: 'dtd', text: dayLabel(i) })].concat(p.tag ? [h('span', { class: 'dtg', text: p.tag })] : [])));
+    });
+    body.appendChild(tabs);
+
+    var p = PLAN[planDay];
+    if (p.theme === 'park') {
+      var bn = h('div', { class: 'parkbn', html: PARK_SVG });
+      bn.appendChild(h('div', { class: 'pt', text: 'Disneyland day' }));
+      body.appendChild(bn);
+    }
+    var head = h('div', { class: 'phd' });
+    if (p.tag) head.appendChild(h('div', { class: 'ptag', text: p.tag }));
+    head.appendChild(h('h3', { class: 'pt2', text: p.title || (p.label + ' · plan not added yet') }));
+    if (p.window) head.appendChild(h('p', { class: 'pw', text: p.window }));
+    if (p.note) head.appendChild(h('p', { class: 'hint', text: p.note }));
+    body.appendChild(head);
+
+    if (!p.rows.length) {
+      body.appendChild(h('p', { class: 'hint', text: 'The details for this day have not been added yet.' }));
+      return;
+    }
+    var tl = h('ol', { class: 'tl' });
+    p.rows.forEach(function (r) {
+      var c = h('div', { class: 'tlc' });
+      c.appendChild(h('div', { class: 'tls', text: r.stop }));
+      if (r.picks) {
+        var pk = h('div', { class: 'picks' });
+        r.picks.forEach(function (n) { pk.appendChild(h('span', { class: 'pick', text: n })); });
+        c.appendChild(pk);
+      }
+      if (r.lead) c.appendChild(h('p', { class: 'tld', text: r.lead }));
+      if (r.items) {
+        var ul = h('ul', { class: 'tli' });
+        r.items.forEach(function (it) {
+          var kids = [h('strong', { text: it.n })];
+          if (it.a) kids.push(h('span', { class: 'addr', text: ' (' + it.a + ')' }));
+          if (it.d) kids.push(document.createTextNode((it.sep !== undefined ? it.sep : ': ') + it.d));
+          ul.appendChild(h('li', {}, kids));
+        });
+        c.appendChild(ul);
+      }
+      tl.appendChild(h('li', { class: 'tlr' }, [h('span', { class: 'tlt', text: r.time }), c]));
+    });
+    body.appendChild(tl);
+    (p.tipsets || []).forEach(function (set) {
+      var tb = h('div', { class: 'tipsbox' }, [h('h4', { class: 'fh', text: set.h })]);
+      var tu = h('ul', { class: 'tli' });
+      set.l.forEach(function (t) { tu.appendChild(h('li', { text: t })); });
+      tb.appendChild(tu);
+      body.appendChild(tb);
+    });
+  }
+
+  function renderItn(focusId) {
+    var pnl = sheet.querySelector('.panel');
+    if (pnl) pnl.classList.toggle('dis', planView === 'plan' && PLAN[planDay].theme === 'park');
+    body.textContent = '';
+    body.appendChild(viewTabs());
+    if (planView === 'plan') { renderPlan(); return; }
+    renderMine(focusId);
+  }
+
+  function renderMine(focusId) {
+    body.appendChild(h('p', { class: 'hint', text: 'Starts Saturday 23 January 2027. Items marked Suggestion are ideas from the slideshow. Edit or remove them freely, then press Save itinerary to keep your changes on the website.' }));
+    body.appendChild(h('div', { class: 'dayctl' }, [
+      h('span', { class: 'saved', text: state.days + ' days' }),
+      h('button', { type: 'button', class: 'btn go', text: 'Save itinerary', onclick: function (e) { saveKind('itn', e.currentTarget); } }),
+      h('button', { type: 'button', class: 'btn', text: 'Add a day', onclick: function () { if (state.days < 21) { state.days++; save(); renderItn(); } } }),
+      (statusEl = h('span', { class: 'saved', 'aria-live': 'polite' }))
+    ]));
+    updateStatus();
+    for (var i = 0; i < state.days; i++) (function (i) {
+      var items = (state.itn[i] = state.itn[i] || []);
+      var isToday = i === todayIdx();
+      var d = h('section', { class: 'day' + (i === PARK_DAY ? ' park' : '') + (isToday ? ' today' : '') });
+      if (i === PARK_DAY) {
+        var bn = h('div', { class: 'parkbn', html: PARK_SVG });
+        bn.appendChild(h('div', { class: 'pt', text: 'Disneyland day' }));
+        d.appendChild(bn);
+      }
+      var head = h('h3', {}, ['Day ' + (i + 1), h('small', { text: dayLabel(i) })]);
+      if (isToday) head.appendChild(h('span', { class: 'todaytag', text: 'Today' }));
+      d.appendChild(head);
+      var ul = h('ul', { class: 'list' });
+      items.forEach(function (it, j) {
+        if (editing && editing.i === i && editing.j === j) {
+          var et = h('input', { type: 'time', id: 'itn-e-t', 'aria-label': 'Time' });
+          et.value = it.time || '';
+          var ex = h('input', { type: 'text', id: 'itn-e-x', autocomplete: 'off', 'aria-label': 'Stop' });
+          ex.value = it.t;
+          var ef = h('form', { class: 'add editf' }, [
+            et, ex,
+            h('button', { type: 'submit', class: 'btn go', text: 'Save' }),
+            h('button', { type: 'button', class: 'btn', text: 'Cancel', onclick: function () { editing = null; renderItn(); } })
+          ]);
+          ef.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var v = ex.value.trim();
+            if (!v) return;
+            it.t = v; it.time = et.value; delete it.s;
+            items.sort(function (a, b) { return (a.time || '99:99') < (b.time || '99:99') ? -1 : 1; });
+            editing = null; save(); renderItn();
+          });
+          ul.appendChild(h('li', { class: 'row' }, [ef]));
+          return;
+        }
+        var txt = h('span', { class: 'itxt' }, [it.t]);
+        if (it.s) txt.appendChild(h('span', { class: 'tag', text: 'Suggestion' }));
+        ul.appendChild(h('li', { class: 'row' }, [
+          h('span', { class: 'tm', text: it.time || '--:--' }),
+          txt,
+          h('button', { type: 'button', class: 'x', 'aria-label': 'Edit ' + it.t, title: 'Edit', html: ICON.edit, onclick: function () { editing = { i: i, j: j }; renderItn('itn-e-x'); } }),
+          h('button', { type: 'button', class: 'x', 'aria-label': 'Remove ' + it.t, title: 'Remove', html: ICON.del, onclick: function () { editing = null; items.splice(j, 1); save(); renderItn(); } })
+        ]));
+      });
+      d.appendChild(ul);
+      var tm = h('input', { type: 'time', id: 'itn-t-' + i, 'aria-label': 'Time for day ' + (i + 1) });
+      var tx = h('input', { type: 'text', id: 'itn-x-' + i, placeholder: 'Add a stop', autocomplete: 'off', 'aria-label': 'Stop for day ' + (i + 1) });
+      var f = h('form', { class: 'add' }, [tm, tx, h('button', { type: 'submit', class: 'btn go', text: 'Add' })]);
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = tx.value.trim();
+        if (!v) return;
+        items.push({ time: tm.value, t: v });
+        items.sort(function (a, b) { return (a.time || '99:99') < (b.time || '99:99') ? -1 : 1; });
+        save(); renderItn('itn-x-' + i);
+      });
+      d.appendChild(f);
+
+      var foods = (state.food[i] = state.food[i] || []);
+      d.appendChild(h('h4', { class: 'fh', text: 'Food and shops to try' }));
+      var fl = h('ul', { class: 'list' });
+      foods.forEach(function (it, j) {
+        var kids = [it.t];
+        if (it.s) kids.push(h('span', { class: 'tag', text: 'Idea' }));
+        fl.appendChild(h('li', { class: 'row' }, [
+          h('span', { class: 'kind ' + (it.k === 'shop' ? 'shop' : 'food'), text: it.k === 'shop' ? 'Shop' : 'Food' }),
+          h('span', { class: 'itxt' }, kids),
+          h('button', { type: 'button', class: 'x', 'aria-label': 'Remove ' + it.t, title: 'Remove', html: ICON.del, onclick: function () { foods.splice(j, 1); save(); renderItn(); } })
+        ]));
+      });
+      d.appendChild(fl);
+      var fk = h('select', { id: 'fd-k-' + i, 'aria-label': 'Food or shop for day ' + (i + 1) }, [h('option', { value: 'food', text: 'Food' }), h('option', { value: 'shop', text: 'Shop' })]);
+      var ft = h('input', { type: 'text', id: 'fd-x-' + i, placeholder: 'Add a place to try', autocomplete: 'off', 'aria-label': 'Place to try on day ' + (i + 1) });
+      var ff = h('form', { class: 'add' }, [fk, ft, h('button', { type: 'submit', class: 'btn go', text: 'Add' })]);
+      ff.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = ft.value.trim();
+        if (!v) return;
+        foods.push({ k: fk.value, t: v });
+        save(); renderItn('fd-x-' + i);
+      });
+      d.appendChild(ff);
+      body.appendChild(d);
+    })(i);
+    if (focusId) refocus(focusId);
+  }
+
+  var TITLES = { rem: 'Reminders', acc: 'Accommodation', itn: 'Itinerary' };
+  function open(name, btn) {
+    current = name; opener = btn;
+    $('sheetTitle').textContent = TITLES[name];
+    sheet.setAttribute('data-k', name);
+    var pn = sheet.querySelector('.panel');
+    if (pn) pn.classList.remove('dis');
+    if (name === 'rem') renderRem(); else if (name === 'acc') renderAcc(); else renderItn();
+    sheet.hidden = false;
+    $('sheetClose').focus();
+    if (name === 'itn') { var td = body.querySelector('.day.today'); if (td) td.scrollIntoView({ block: 'start' }); }
+  }
+  function close() {
+    sheet.hidden = true; current = null; editing = null;
+    meta();
+    if (opener) opener.focus();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.navbtn'), function (b) {
+    b.addEventListener('click', function () { open(b.getAttribute('data-sheet'), b); });
+  });
+  $('sheetClose').addEventListener('click', close);
+  $('sheetBd').addEventListener('click', close);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) close(); });
+  meta();
+})();
+</script>
+
+</body>
+</html>
